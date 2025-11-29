@@ -1,0 +1,24 @@
+{
+    "manifest_version": 3,
+    "name": "FaceNav: Multimodal Browser Controller",
+    "version": "1.0",
+    "description": "Navigate the web using head gestures.",
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "storage", 
+      "tabs"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_title": "Toggle FaceNav"
+    },
+    "web_accessible_resources": [
+      {
+        "resources": ["content_scripts/*"],
+        "matches": ["<all_urls>"]
+      }
+    ]
+  }
