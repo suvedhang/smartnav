@@ -24,8 +24,6 @@ let state = {
 // If the extension is clicked twice, remove the old one first.
 if (document.getElementById('facenav-root')) {
     document.getElementById('facenav-root').remove();
-    // Ideally we should also stop the camera stream here, 
-    // but for a prototype, a reload works best.
 }
 
 // 2. CREATE THE UI (The "Cockpit")
@@ -82,32 +80,15 @@ container.innerHTML = `
 `;
 document.body.appendChild(container);
 
-// 3. LOAD AI LIBRARIES (Sequentially)
-const libraries = [
-    "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js",
-    "https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js",
-    "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"
-];
-
-function loadScriptsSequentially(urls, callback) {
-    if (urls.length === 0) {
-        callback();
-        return;
-    }
-    const script = document.createElement('script');
-    script.src = urls[0];
-    script.crossOrigin = "anonymous";
-    script.onload = () => loadScriptsSequentially(urls.slice(1), callback);
-    document.head.appendChild(script);
+// 3. START THE AI LOGIC (Called immediately)
+// We assume FaceMesh and Camera are now available globally because background.js injected them.
+if (typeof FaceMesh === 'undefined' || typeof Camera === 'undefined') {
+    console.error("FaceNav Error: AI libraries not found. Ensure they are in the 'libs' folder and injected.");
+    document.querySelector('.fn-status').innerText = "Error: Libraries Missing";
+} else {
+    startAI();
 }
 
-loadScriptsSequentially(libraries, () => {
-    console.log("FaceNav: AI Libraries Loaded.");
-    startAI();
-});
-
-
-// 4. START THE AI LOGIC
 function startAI() {
     const videoElement = document.querySelector('#facenav-root .fn-video');
     const canvasElement = document.querySelector('#facenav-root .fn-canvas');
@@ -116,6 +97,7 @@ function startAI() {
 
     // Initialize MediaPipe FaceMesh
     const faceMesh = new FaceMesh({locateFile: (file) => {
+        // We still fetch the heavy binary assets from CDN to keep extension size small
         return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
     }});
 

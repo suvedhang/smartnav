@@ -1,24 +1,44 @@
 {
-    "manifest_version": 3,
-    "name": "FaceNav: Multimodal Browser Controller",
-    "version": "1.0",
-    "description": "Navigate the web using head gestures.",
-    "permissions": [
-      "activeTab",
-      "scripting",
-      "storage", 
-      "tabs"
-    ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_title": "Toggle FaceNav"
-    },
-    "web_accessible_resources": [
-      {
-        "resources": ["content_scripts/*"],
-        "matches": ["<all_urls>"]
-      }
-    ]
-  }
+  "manifest_version": 3,
+  "name": "FaceNav",
+  "version": "1.0",
+  "description": "Face navigation extension using local MediaPipe files.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "libs/mediapipe/face_mesh.js",
+        "libs/mediapipe/face_mesh_solution_packed_assets_loader.js",
+        "libs/mediapipe/face_mesh_solution_simd_wasm_bin.js",
+        "libs/mediapipe/face_mesh_solution_simd_wasm_bin.wasm",
+        "libs/mediapipe/face_mesh_solution_packed_assets.data"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "libs/mediapipe/face_mesh.js",
+        "libs/camera_utils.js",
+        "libs/control_utils.js",
+        "libs/face_mesh.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
