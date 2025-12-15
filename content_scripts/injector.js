@@ -15,7 +15,7 @@ const CONFIG = {
 // --- STATE MANAGEMENT ---
 let state = {
     isScrolling: false,
-    scrollDirection: 0, 
+    scrollDirection: 0,
     lastClickTime: 0,
     targetScrollY: window.scrollY
 };
@@ -24,6 +24,8 @@ let state = {
 // If the extension is clicked twice, remove the old one first.
 if (document.getElementById('facenav-root')) {
     document.getElementById('facenav-root').remove();
+    // Force reload to clear old AI instances if needed (optional)
+    // window.location.reload(); 
 }
 
 // 2. CREATE THE UI (The "Cockpit")
@@ -96,10 +98,13 @@ function startAI() {
     const canvasCtx = canvasElement.getContext('2d');
 
     // Initialize MediaPipe FaceMesh
-    const faceMesh = new FaceMesh({locateFile: (file) => {
-        // We still fetch the heavy binary assets from CDN to keep extension size small
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-    }});
+    // CRITICAL FIX: Use chrome.runtime.getURL to load local files
+    const faceMesh = new FaceMesh({
+        locateFile: (file) => {
+            console.log(`Loading MediaPipe file: ${file}`);
+            return chrome.runtime.getURL(`libs/mediapipe/${file}`);
+        }
+    });
 
     faceMesh.setOptions({
         maxNumFaces: 1,
@@ -113,7 +118,7 @@ function startAI() {
     // Initialize Camera
     const camera = new Camera(videoElement, {
         onFrame: async () => {
-            await faceMesh.send({image: videoElement});
+            await faceMesh.send({ image: videoElement });
         },
         width: 320,
         height: 240
@@ -182,7 +187,7 @@ function startAI() {
 function triggerClick(statusBox) {
     statusBox.innerText = "💥 CLICK!";
     statusBox.style.color = "red";
-    
+
     // Flash Screen White
     const flash = document.createElement('div');
     Object.assign(flash.style, {
